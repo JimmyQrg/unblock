@@ -26,10 +26,10 @@
 
   .box {
     background: transparent;
-    border: 5px solid white;   /* thicker white outline */
+    border: 5px solid white;
     padding: 25px 35px;
     text-align: center;
-    border-radius: 0;          /* sharp corners */
+    border-radius: 0;
   }
 
   input {
@@ -37,8 +37,8 @@
     font-size: 16px;
     width: 320px;
     margin: 10px 0;
-    border: 4px solid white;   /* thicker outline */
-    border-radius: 0;          /* sharp corners */
+    border: 4px solid white;
+    border-radius: 0;
     outline: none;
     background: transparent;
     color: white;
@@ -56,8 +56,8 @@
     font-size: 16px;
     background: transparent;
     color: white;
-    border: 4px solid white;   /* thicker outline */
-    border-radius: 12px;       /* rounded corners only for button */
+    border: 4px solid white;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s;
   }
@@ -86,7 +86,7 @@ async function openBlank() {
     return;
   }
 
-  // try iframe first
+  // try iframe first (if site allows embedding)
   try {
     newWin.document.write(`
       <!DOCTYPE html>
@@ -106,11 +106,64 @@ async function openBlank() {
   try {
     const response = await fetch(url);
     const text = await response.text();
+
+    // Inject content
     newWin.document.open();
     newWin.document.write(text);
+
+    // Add a script that hijacks all <a> clicks
+    newWin.document.write(`
+      <script>
+      document.addEventListener("click", function(e) {
+        let target = e.target.closest("a");
+        if (target && target.href) {
+          e.preventDefault();
+          window.opener.postMessage({ type: "openLink", url: target.href }, "*");
+        }
+      });
+      <\/script>
+    `);
+
     newWin.document.close();
   } catch (e) {
     console.error("fetch failed:", e);
+    newWin.document.body.innerHTML = `<h3 style="color:red;">Could not load this link.</h3>`;
+  }
+}
+
+// Listen for child window asking to open another link
+window.addEventListener("message", (event) => {
+  if (event.data?.type === "openLink" && event.data.url) {
+    openLinkAboutBlank(event.data.url);
+  }
+});
+
+async function openLinkAboutBlank(url) {
+  const newWin = window.open("about:blank", "_blank");
+  if (!newWin) return;
+
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+
+    newWin.document.open();
+    newWin.document.write(text);
+
+    // Re-attach link hijacker
+    newWin.document.write(`
+      <script>
+      document.addEventListener("click", function(e) {
+        let target = e.target.closest("a");
+        if (target && target.href) {
+          e.preventDefault();
+          window.opener.postMessage({ type: "openLink", url: target.href }, "*");
+        }
+      });
+      <\/script>
+    `);
+
+    newWin.document.close();
+  } catch (e) {
     newWin.document.body.innerHTML = `<h3 style="color:red;">Could not load this link.</h3>`;
   }
 }
