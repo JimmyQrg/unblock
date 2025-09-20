@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Open Link in about:blank</title>
+<style>
+  body {
+    font-family: sans-serif;
+    background: #111;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  input, button {
+    padding: 10px;
+    font-size: 16px;
+    margin: 5px;
+    width: 320px;
+  }
+</style>
+</head>
+<body>
+  <h2>Open Link in about:blank Tab</h2>
+  <input type="text" id="url" placeholder="Enter link (e.g. https://example.com)">
+  <button onclick="openBlank()">Apply</button>
+
+<script>
+async function openBlank() {
+  const url = document.getElementById("url").value.trim();
+  if (!url) return;
+
+  // open about:blank tab
+  const newWin = window.open("about:blank", "_blank");
+  if (!newWin) {
+    alert("Popup blocked! Please allow popups for this page.");
+    return;
+  }
+
+  // try iframe first
+  try {
+    newWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>Loaded Content</title></head>
+      <body style="margin:0;padding:0;">
+        <iframe src="${url}" style="border:none;width:100vw;height:100vh;"></iframe>
+      </body>
+      </html>
+    `);
+    newWin.document.close();
+  } catch (e) {
+    console.warn("iframe failed, trying fetch+inject", e);
+  }
+
+  // fallback: fetch and inject content
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+    newWin.document.open();
+    newWin.document.write(text);
+    newWin.document.close();
+  } catch (e) {
+    console.error("fetch failed:", e);
+    newWin.document.body.innerHTML = `<h3 style="color:red;">Could not load this link.</h3>`;
+  }
+}
+</script>
+</body>
+</html>
