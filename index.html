@@ -2,40 +2,83 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Open Link in about:blank</title>
+<title>SCHOOL CHROMEBOOK UNBLOCKER</title>
 <style>
   body {
-    font-family: sans-serif;
-    background: #111;
-    color: #eee;
+    margin: 0;
+    height: 100vh;
+    background: url('c6e66984-1a96-4753-b83d-e7824f7c7c2a.png') no-repeat center center fixed;
+    background-size: cover;
+    font-family: "Segoe UI", sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    color: white;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.7);
   }
-  input, button {
-    padding: 10px;
+
+  h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+
+  .box {
+    background: rgba(255,255,255,0.95);
+    color: #000;
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    text-align: center;
+  }
+
+  input {
+    padding: 12px;
     font-size: 16px;
-    margin: 5px;
     width: 320px;
+    margin: 10px 0;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+  }
+  input:focus {
+    border-color: #0078ff;
+    box-shadow: 0 0 8px rgba(0,120,255,0.6);
+  }
+
+  button {
+    padding: 12px 20px;
+    font-size: 16px;
+    background: #0078ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  button:hover {
+    background: #005bcc;
   }
 </style>
 </head>
 <body>
-  <h2>Open Link in about:blank Tab</h2>
-  <input type="text" id="url" placeholder="Enter link (e.g. https://example.com)">
-  <button onclick="openBlank()">Apply</button>
+  <h1>SCHOOL CHROMEBOOK UNBLOCKER</h1>
+  <div class="box">
+    <p>Enter a link below:</p>
+    <input type="text" id="url" placeholder="https://example.com">
+    <br>
+    <button onclick="openBlank()">Apply</button>
+  </div>
 
 <script>
 async function openBlank() {
   const url = document.getElementById("url").value.trim();
   if (!url) return;
 
-  // open about:blank tab
   const newWin = window.open("about:blank", "_blank");
   if (!newWin) {
-    alert("Popup blocked! Please allow popups for this page.");
+    alert("Popup blocked! Please allow popups.");
     return;
   }
 
@@ -52,10 +95,10 @@ async function openBlank() {
     `);
     newWin.document.close();
   } catch (e) {
-    console.warn("iframe failed, trying fetch+inject", e);
+    console.warn("iframe failed", e);
   }
 
-  // fallback: fetch and inject content
+  // fallback: fetch + inject
   try {
     const response = await fetch(url);
     const text = await response.text();
